@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading;
+using System.IO;
+using System.Text;
 
 namespace Pendu
 {
@@ -11,13 +13,13 @@ namespace Pendu
         {
             PLAYING = 0,
             WIN = 1,
-            LOOSE = 2,
+            LOSS = 2,
         }
 
         public enum GameMode
         {
             COUNTRY = 0,
-            WORDS = 1,
+            VERBS = 1,
         }
 
         public static int healthPoints = 6;
@@ -27,7 +29,7 @@ namespace Pendu
         public static string wordToFind;
         public static bool wordFound;
 
-        public static string[] countries =
+        /*public static string[] countries =
         {
             "france",
             "allemagne" ,
@@ -155,7 +157,9 @@ namespace Pendu
             "montenegro" ,
             "bosnie" ,
             "malte"
-        };
+        };*/
+        public static string[] countries = File.ReadAllLines(@"D:\Documents\E-Artsup\GDC1_2021-2022\ProgC#\Pendu\Pendu\countries.txt", Encoding.UTF8);
+        public static string[] verbs = File.ReadAllLines(@"D:\Documents\E-Artsup\GDC1_2021-2022\ProgC#\Pendu\Pendu\verbs.txt", Encoding.UTF8);
 
         public static char[] lettersNotInTheWord; // bad letters
         public static char[] alreadyGivenLetters; // good and bad letters
@@ -182,16 +186,16 @@ namespace Pendu
             lettersNotInTheWord = new char[0];
             alreadyGivenLetters = new char[0];
 
-            wordToFind = "alaska";
+            //wordToFind = "test & lol";
 
-            /*if (m_gameMode == GameMode.COUNTRY)
+            if (m_gameMode == GameMode.COUNTRY)
             {
-                wordToFind = GetRandomWord(countries).ToLower(); // To change when new list of words implemented
+                wordToFind = GetRandomWord(countries).ToLower();
             }
             else
             {
-                wordToFind = GetRandomWord(countries).ToLower(); // To change when new list of words implemented
-            }*/
+                wordToFind = GetRandomWord(verbs).ToLower();
+            }
 
             Console.Clear();
             Console.WriteLine("Looking for a new word to find...");
@@ -286,7 +290,22 @@ namespace Pendu
                 {
                     Console.Write(Char.ToUpper(copy_wordToFind[i]) + " ");
                     nbLettersFound += 1;
-                }else
+                }else if (copy_wordToFind[i] == ' ')
+                {
+                    Console.Write("  ");
+                    nbLettersFound += 1;
+                }
+                else if (copy_wordToFind[i] == '-')
+                {
+                    Console.Write("- ");
+                    nbLettersFound += 1;
+                }
+                else if (copy_wordToFind[i] == '&')
+                {
+                    Console.Write("& ");
+                    nbLettersFound += 1;
+                }
+                else
                 {
                     Console.Write("_ ");
                 }
@@ -330,8 +349,11 @@ namespace Pendu
         {
             if (m_gameState == GameState.WIN)
                 Console.WriteLine("You won, congratulations!\n");
-            else if (m_gameState == GameState.LOOSE)
-                Console.WriteLine("You lost, so sad!\n");
+            else if (m_gameState == GameState.LOSS)
+            {
+                Console.WriteLine("You lost, so sad!\n\nThe word was : " + wordToFind.ToUpper() + "\n");
+
+            }
 
 
             Console.Write("The game is now over, would you like to play again? (y/n) : ");
@@ -357,7 +379,7 @@ namespace Pendu
         static void CheckGameState()
         {
             if (healthPoints == 0)
-                m_gameState = GameState.LOOSE;
+                m_gameState = GameState.LOSS;
             else if (nbLettersFound == wordToFind.Length)
             {
                 wordFound = true;
@@ -420,7 +442,7 @@ namespace Pendu
 
         static GameMode GetGameMode()
         {
-            Console.Write("1 - Play with countries.\n2 - Play with long hard words.\nType 1 or 2 : ");
+            Console.Write("1 - Play with countries.\n2 - Play with verbs.\nType 1 or 2 : ");
 
             string entry = Console.ReadLine();
 
@@ -433,7 +455,7 @@ namespace Pendu
             if (entry == "1")
                 return GameMode.COUNTRY;
             else
-                return GameMode.WORDS;
+                return GameMode.VERBS;
         }
 
         static string GetRandomWord(string[] wordList)
