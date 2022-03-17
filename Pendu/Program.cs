@@ -160,6 +160,8 @@ namespace Pendu
         public static char[] lettersNotInTheWord; // bad letters
         public static char[] alreadyGivenLetters; // good and bad letters
 
+        public static int nbLettersFound;
+
         #endregion
 
         static void Main(string[] args)
@@ -173,22 +175,23 @@ namespace Pendu
             Console.WriteLine("The Hangman game shall begin!\n");
             m_gameState = GameState.PLAYING;
             healthPoints = 6;
+            nbLettersFound = 0;
             wordFound = false;
             m_gameMode = GetGameMode();
 
             lettersNotInTheWord = new char[0];
             alreadyGivenLetters = new char[0];
 
-            //wordToFind = "france";
+            wordToFind = "alaska";
 
-            if (m_gameMode == GameMode.COUNTRY)
+            /*if (m_gameMode == GameMode.COUNTRY)
             {
                 wordToFind = GetRandomWord(countries).ToLower(); // To change when new list of words implemented
             }
             else
             {
                 wordToFind = GetRandomWord(countries).ToLower(); // To change when new list of words implemented
-            }
+            }*/
 
             Console.Clear();
             Console.WriteLine("Looking for a new word to find...");
@@ -269,12 +272,32 @@ namespace Pendu
 
         static void PrintHiddenWord()
         {
+            nbLettersFound = 0;
+            char[] copy_wordToFind = new char[wordToFind.Length];
+
+            for (int i=0; i< wordToFind.Length; i++)
+            {
+                copy_wordToFind[i] = wordToFind[i];
+            }
+
+            for (int i = 0; i < copy_wordToFind.Length; i++)
+            {
+                if (checkCharPresenceInTab(alreadyGivenLetters, Char.ToLower(copy_wordToFind[i])) == true)
+                {
+                    Console.Write(Char.ToUpper(copy_wordToFind[i]) + " ");
+                    nbLettersFound += 1;
+                }else
+                {
+                    Console.Write("_ ");
+                }
+            }
+            Console.Write("\n\n");
 
         }
 
         static bool checkPresence(string p_wordToFind, char p_letter)
         {
-            return p_wordToFind.Contains(Char.ToLower(p_letter));
+            return p_wordToFind.ToLower().Contains(Char.ToLower(p_letter));
         }
 
         static bool checkCharPresenceInTab(char[] tab, char letter)
@@ -283,7 +306,7 @@ namespace Pendu
 
             for (int i=0; i< tab.Length; i++)
             {
-                if (Char.ToLower(letter) == tab[i])
+                if (Char.ToLower(letter) == Char.ToLower(tab[i]))
                 {
                     answer = true;
                 }
@@ -297,9 +320,9 @@ namespace Pendu
             for (int i=0; i<tab.Length; i++)
             {
                 if (i == 0)
-                    Console.Write("These letters are not in the word to guess : " + tab[i].ToString().ToUpper());
+                    Console.Write("These letters are not in the word to guess : " + Char.ToUpper(tab[i]));
                 else
-                    Console.Write(" - " + tab[i].ToString().ToUpper());
+                    Console.Write(" - " + Char.ToUpper(tab[i]));
             }
         }
 
@@ -335,14 +358,17 @@ namespace Pendu
         {
             if (healthPoints == 0)
                 m_gameState = GameState.LOOSE;
-            else if (wordFound == true)
+            else if (nbLettersFound == wordToFind.Length)
+            {
+                wordFound = true;
                 m_gameState = GameState.WIN;
+            }
         }
 
         static void HangmanDisplay()
         {
 
-            Console.WriteLine("\n   +---+");
+            Console.WriteLine("\n\n   +---+");
             Console.WriteLine("   |   |");
 
             if (healthPoints < 6)
@@ -366,7 +392,7 @@ namespace Pendu
             else
                 Console.WriteLine("       |");
 
-            Console.WriteLine("========");
+            Console.WriteLine("========\n");
         }
 
         
@@ -375,9 +401,9 @@ namespace Pendu
             Console.Write("Give a letter : ");
             string entry = Console.ReadLine();
 
-            while(entry.Length > 1 || Char.IsLetter(Convert.ToChar(entry)) == false || checkCharPresenceInTab(alreadyGivenLetters, Convert.ToChar(entry)) == true)
+            while(entry.Length > 1 || Char.IsLetter(Convert.ToChar(entry)) == false || checkCharPresenceInTab(alreadyGivenLetters, Convert.ToChar(entry.ToLower())) == true)
             {
-                if (checkCharPresenceInTab(alreadyGivenLetters, Convert.ToChar(entry)) == true)
+                if (entry.Length == 1 && checkCharPresenceInTab(alreadyGivenLetters, Convert.ToChar(entry.ToLower())) == true)
                     Console.Write("You already tried this letter, please type another one : ");
                 else
                     Console.Write("Wrong answer, please write one single letter between A and Z : ");
@@ -387,9 +413,9 @@ namespace Pendu
 
 
             Array.Resize(ref alreadyGivenLetters, p_totalAttempts+1);
-            alreadyGivenLetters[p_totalAttempts] = Convert.ToChar(entry);
+            alreadyGivenLetters[p_totalAttempts] = Convert.ToChar(entry.ToLower());
 
-            return Convert.ToChar(entry);
+            return Convert.ToChar(entry.ToLower());
         }
 
         static GameMode GetGameMode()
